@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>ABR Artifact Library</title>
+
+<style>
+body{
+font-family:Arial;
+text-align:center;
+background:#eef2f7;
+}
+
+canvas{
+background:white;
+border:1px solid #ccc;
+margin-top:20px;
+}
+
+button{
+margin:6px;
+padding:8px 14px;
+cursor:pointer;
+}
+
+h2{
+margin-bottom:5px;
+}
+</style>
+</head>
+
+<body>
+
+<h2>Auditory Brainstem Response Artifact Library</h2>
+<p>Select an artifact type to visualize its effect on the ABR waveform</p>
+
+<div>
+<button onclick="draw('normal')">Normal ABR</button>
+<button onclick="draw('myogenic')">Myogenic Artifact</button>
+<button onclick="draw('electrical')">Electrical Artifact</button>
+<button onclick="draw('movement')">Movement Artifact</button>
+<button onclick="draw('electrode')">Electrode Artifact</button>
+<button onclick="draw('stimulus')">Stimulus Artifact</button>
+</div>
+
+<canvas id="c" width="900" height="420"></canvas>
+
+<script>
+
+const canvas = document.getElementById("c");
+const ctx = canvas.getContext("2d");
+
+function axes(){
+
+ctx.clearRect(0,0,canvas.width,canvas.height);
+
+ctx.beginPath();
+ctx.moveTo(60,360);
+ctx.lineTo(850,360);
+ctx.stroke();
+
+ctx.beginPath();
+ctx.moveTo(60,360);
+ctx.lineTo(60,40);
+ctx.stroke();
+
+ctx.fillText("Latency (ms)",430,395);
+
+ctx.save();
+ctx.rotate(-Math.PI/2);
+ctx.fillText("Amplitude (µV)",-240,25);
+ctx.restore();
+
+}
+
+function gaussian(x,mu,a,w){
+return a*Math.exp(-((x-mu)**2)/(2*w*w));
+}
+
+function baseABR(x){
+
+let t=x/80;
+
+return (
+gaussian(t,1.6,0.5,0.12)+
+gaussian(t,2.7,0.6,0.13)+
+gaussian(t,3.7,0.8,0.15)+
+gaussian(t,4.7,0.7,0.16)+
+gaussian(t,5.8,1.0,0.18)
+)
+
+}
+
+function draw(type){
+
+axes();
+
+ctx.beginPath();
+ctx.lineWidth=2;
+
+for(let x=0;x<780;x++){
+
+let y = baseABR(x);
+
+if(type==="myogenic"){
+y += (Math.random()-0.5)*0.9;
+}
+
+if(type==="electrical"){
+y += Math.sin(x/3)*0.5;
+}
+
+if(type==="movement"){
+if(x>300 && x<420) y += (Math.random())*2;
+}
+
+if(type==="electrode"){
+y += (Math.random()-0.5)*0.25;
+}
+
+if(type==="stimulus"){
+if(x<30) y += 2;
+}
+
+let px = 60 + x;
+let py = 360 - y*150;
+
+if(x===0) ctx.moveTo(px,py);
+else ctx.lineTo(px,py);
+
+}
+
+ctx.strokeStyle="blue";
+ctx.stroke();
+
+markPeaks();
+
+}
+
+function markPeaks(){
+
+const peaks = [
+{lat:1.6,label:"I"},
+{lat:2.7,label:"II"},
+{lat:3.7,label:"III"},
+{lat:4.7,label:"IV"},
+{lat:5.8,label:"V"}
+];
+
+peaks.forEach(p=>{
+
+let x = 60 + p.lat*80;
+let y = 360 - 0.8*150;
+
+ctx.fillStyle="red";
+ctx.beginPath();
+ctx.arc(x,y,4,0,Math.PI*2);
+ctx.fill();
+
+ctx.fillText(p.label,x-3,y-10);
+
+});
+
+}
+
+draw("normal");
+
+</script>
+</body>
+</html>

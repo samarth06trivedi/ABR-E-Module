@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>ABR - E Module</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="./index.css" />
+  </head>
+  <body>
+    <div class="wrapper">
+      <header class="hero">
+        <h1>ABR - E Module</h1>
+        <p class="subtitle">
+          Interactive Learning Platform for Auditory Brainstem Response
+        </p>
+      </header>
+
+      <section class="content-grid">
+        <div class="card full-width">
+          <h2>Summary</h2>
+          <p>
+            The Auditory Brain Response (ABR) test is an objective test that
+            assesses the functioning of the auditory pathway from the auditory
+            nerve to the brainstem. This test records the electrical activity
+            that occurs as a response to sound stimuli, such as clicks or tone
+            bursts, in the first 10 milliseconds after presentation. A series of
+            waves, designated as I-V, are recorded on the scalp using surface
+            electrodes, which indicate electrical activity occurring in
+            different areas of the auditory pathway. This test is commonly
+            employed for newborn hearing screening, determination of hearing
+            thresholds, as well as for diagnosing various neurological or
+            retrocochlear disorders, including acoustic neuroma and auditory
+            neuropathy. This test is also valuable as it does not require any
+            cooperation from the patient.
+          </p>
+        </div>
+
+        <div class="card full-width">
+          <h2>Description</h2>
+          <p>
+            This e-module is thoughtfully structured into four comprehensive
+            modules, each designed to enhance understanding through multiple
+            learning approaches. Each module features engaging video lessons
+            that support visual learning and help explain key concepts in a
+            clear and accessible manner. To further deepen understanding, the
+            module includes interactive sliders that allow learners to adjust
+            different parameters and observe how various factors influence the
+            Auditory Brainstem Response (ABR). This hands-on interaction
+            encourages active exploration and strengthens conceptual clarity.
+            Finally, every module concludes with a quiz, enabling students to
+            assess their understanding and reinforce the concepts they have
+            learned. Overall, this e-module combines visual instruction,
+            interactive learning, and self-assessment to create a dynamic and
+            effective educational experience.
+          </p>
+        </div>
+
+        <div class="card info-box">
+          <div class="info-item">
+            <span class="info-title">Timing</span>
+            <span class="info-value">1 Hour</span>
+          </div>
+          <div class="info-item">
+            <span class="info-title">Modules</span>
+            <span class="info-value">4</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Videos</h2>
+          <select onchange="navigate(this)">
+            <option value="" disabled selected>Select Video</option>
+            <option value="https://youtu.be/U_62GJPsnlU">Video 1</option>
+            <option value="https://youtu.be/k-4qeIOrCQ4">Video 2</option>
+            <option value="https://youtu.be/N5Zcp2Zsjno">Video 3</option>
+            <option value="https://youtu.be/5_6c66IJ_kU">Video 4</option>
+          </select>
+        </div>
+
+        <div class="card half-width">
+          <h2>Interactive Slider</h2>
+          <select onchange="navigate(this)">
+            <option value="" disabled selected>Select Slider</option>
+            <option value="Intensity.html">
+              Slider 1 - Effect of Intensity
+            </option>
+            <option value="Rate.html">Slider 2 - Effect of Rate</option>
+            <option value="Artifact library.html">
+              Slider 3 - Artifact Library
+            </option>
+          </select>
+        </div>
+
+        <div class="card half-width">
+          <h2>Quiz</h2>
+          <select onchange="navigate(this)">
+            <option value="" disabled selected>Select Quiz</option>
+            <option value="Quiz-1.html">Quiz 1</option>
+            <option value="Quiz-2.html">Quiz 2</option>
+            <option value="Quiz-3.html">Quiz 3</option>
+            <option value="Quiz-4.html">Quiz 4</option>
+          </select>
+        </div>
+      </section>
+
+      <footer>© 2026 ABR E-Module | Designed for Educational Use</footer>
+    </div>
+
+    <script>
+      function navigate(selectElement) {
+        const value = selectElement.value;
+        if (value !== "") {
+          window.location.href = value;
+          selectElement.selectedIndex = 0; // reset to placeholder
+        }
+      }
+    </script>
+  </body>
+</html>

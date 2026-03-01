@@ -1,0 +1,411 @@
+<!doctype html>
+<html>
+  <head>
+    <title>ABR Quiz</title>
+
+    <style>
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #f4f6fb;
+      }
+
+      /* MAIN LAYOUT */
+      .quiz-wrapper {
+        display: flex;
+        height: 100vh;
+      }
+
+      /* LEFT SIDE */
+      .quiz-main {
+        width: 75%;
+        padding: 30px;
+        background: white;
+      }
+
+      .quiz-side {
+        width: 25%;
+        background: #eef2ff;
+        padding: 20px;
+        border-left: 1px solid #ccc;
+      }
+
+      .question-number {
+        display: inline-block;
+        width: 40px;
+        height: 40px;
+        line-height: 40px;
+        text-align: center;
+        margin: 5px;
+        border-radius: 6px;
+        background: #ddd;
+        cursor: pointer;
+        font-weight: bold;
+      }
+
+      .question-number.attempted {
+        background: #28a745;
+        color: white;
+      }
+
+      .question-number.review {
+        background: #ffc107;
+      }
+
+      .option {
+        margin: 10px 0;
+      }
+
+      .controls {
+        margin-top: 20px;
+      }
+
+      button {
+        padding: 8px 15px;
+        margin-right: 10px;
+        border: none;
+        background: #4e73df;
+        color: white;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background: #2e59d9;
+      }
+
+      #timer {
+        font-weight: bold;
+        color: red;
+        margin-bottom: 15px;
+      }
+
+      .review-answer {
+        margin-top: 10px;
+        padding: 10px;
+        border-radius: 5px;
+      }
+      .correct {
+        background: #d4edda;
+      }
+      .wrong {
+        background: #f8d7da;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="quiz-wrapper">
+      <div class="quiz-main">
+        <div id="timer"></div>
+        <h2 id="question"></h2>
+        <div id="options"></div>
+
+        <div class="controls">
+          <button id="prevBtn" onclick="prevQuestion()">Prev</button>
+          <button onclick="markForReview()">Mark for Review</button>
+          <button id="nextBtn" onclick="nextQuestion()">Next</button>
+          <button onclick="submitQuiz()">Submit</button>
+        </div>
+      </div>
+
+      <div class="quiz-side">
+        <h3>Questions</h3>
+        <div id="questionList"></div>
+      </div>
+    </div>
+
+    <script>
+      const quiz = [
+        {
+          question:
+            "1. As stimulus intensity decreases toward threshold levels, which of the following changes is expected in ABR?",
+          options: [
+            "A. Decreased latency and increased amplitude",
+            "B. Increased latency and decreased amplitude",
+            "C. No change in latency but decreased amplitude",
+            "D. Decreased latency and decreased amplitude",
+          ],
+          answer: 1,
+        },
+        {
+          question:
+            "2. Which ABR wave is the most robust and persists even at low stimulus intensities?",
+          options: ["A. Wave I", "B. Wave II", "C. Wave III", "D. Wave V"],
+          answer: 3,
+        },
+        {
+          question:
+            "3. Increasing the stimulus rate above 30 clicks per second typically results in:",
+          options: [
+            "A. Shortened absolute latencies",
+            "B. Increased wave amplitudes",
+            "C. Prolonged absolute latencies and reduced amplitudes",
+            "D. Improved waveform clarity",
+          ],
+          answer: 2,
+        },
+        {
+          question:
+            "4. Which stimulus rate is generally preferred for ABR threshold estimation?",
+          options: [
+            "A. >50 clicks per second",
+            "B. 40 clicks per second",
+            "C. 11–21 clicks per second",
+            "D. 80 clicks per second",
+          ],
+          answer: 2,
+        },
+        {
+          question: "5. Stimulus artifact in ABR recordings:",
+          options: [
+            "A. Occurs after Wave V",
+            "B. Appears before Wave I",
+            "C. Is caused by muscle tension",
+            "D. Indicates retrocochlear pathology",
+          ],
+          answer: 1,
+        },
+        {
+          question: "6. Myogenic artifacts in ABR recordings are caused by:",
+          options: [
+            "A. Electrical interference from equipment",
+            "B. Poor grounding of electrodes",
+            "C. Muscle activity from neck or facial muscles",
+            "D. Low stimulus intensity",
+          ],
+          answer: 2,
+        },
+        {
+          question:
+            "7. Which stimulus polarity typically produces an earlier Wave I latency in ABR?",
+          options: [
+            "A. Condensation",
+            "B. Alternating",
+            "C. Rarefaction",
+            "D. Biphasic",
+          ],
+          answer: 2,
+        },
+        {
+          question:
+            "8. Alternating polarity is primarily used in ABR testing to:",
+          options: [
+            "A. Increase wave amplitude",
+            "B. Shorten interpeak latencies",
+            "C. Reduce stimulus artifact and cochlear microphonic",
+            "D. Enhance neural adaptation",
+          ],
+          answer: 2,
+        },
+        {
+          question:
+            "9. If ABR filter bandwidth is set too narrow, the most likely effect is:",
+          options: [
+            "A. Increased background noise",
+            "B. Distorted waveform and reduced amplitude",
+            "C. Shortened absolute latencies",
+            "D. Improved waveform clarity",
+          ],
+          answer: 1,
+        },
+        {
+          question: "10. Compared to adults, neonates typically show:",
+          options: [
+            "A. Shorter absolute latencies",
+            "B. Larger amplitudes",
+            "C. Longer absolute latencies and smaller amplitudes",
+            "D. Identical waveform morphology",
+          ],
+          answer: 2,
+        },
+      ];
+
+      let currentQuestion = 0;
+      let userAnswers = new Array(quiz.length).fill(null);
+      let reviewMarked = new Array(quiz.length).fill(false);
+      let timeLeft = 600; // 10 minutes
+      let timer;
+
+      /* TIMER */
+      function startTimer() {
+        timer = setInterval(() => {
+          let minutes = Math.floor(timeLeft / 60);
+          let seconds = timeLeft % 60;
+          document.getElementById("timer").innerText =
+            "Time Left: " + minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
+
+          timeLeft--;
+
+          if (timeLeft < 0) {
+            clearInterval(timer);
+            submitQuiz(true); // auto submit
+          }
+        }, 1000);
+      }
+
+      /* LOAD QUESTION */
+      function loadQuestion(index) {
+        currentQuestion = index;
+
+        document.getElementById("question").innerText = quiz[index].question;
+
+        const optionsDiv = document.getElementById("options");
+        optionsDiv.innerHTML = "";
+
+        quiz[index].options.forEach((option, i) => {
+          optionsDiv.innerHTML += `
+      <div class="option">
+        <input type="radio" name="option" value="${i}"
+        ${userAnswers[index] === i ? "checked" : ""}>
+        ${option}
+      </div>
+    `;
+        });
+
+        // ✅ Hide / Show Prev & Next Buttons
+        const prevBtn = document.getElementById("prevBtn");
+        const nextBtn = document.getElementById("nextBtn");
+
+        if (currentQuestion === 0) {
+          prevBtn.style.display = "none";
+        } else {
+          prevBtn.style.display = "inline-block";
+        }
+
+        if (currentQuestion === quiz.length - 1) {
+          nextBtn.style.display = "none";
+        } else {
+          nextBtn.style.display = "inline-block";
+        }
+
+        updateQuestionStatus();
+      }
+
+      /* SAVE ANSWER */
+      function saveAnswer() {
+        const selected = document.querySelector('input[name="option"]:checked');
+        if (selected) {
+          userAnswers[currentQuestion] = parseInt(selected.value);
+        }
+      }
+
+      /* NAVIGATION */
+      function nextQuestion() {
+        saveAnswer();
+        if (currentQuestion < quiz.length - 1)
+          loadQuestion(currentQuestion + 1);
+      }
+
+      function prevQuestion() {
+        saveAnswer();
+        if (currentQuestion > 0) loadQuestion(currentQuestion - 1);
+      }
+
+      function markForReview() {
+        reviewMarked[currentQuestion] = true;
+        updateQuestionStatus();
+      }
+
+      /* QUESTION PANEL */
+      function createQuestionPanel() {
+        const panel = document.getElementById("questionList");
+        panel.innerHTML = "";
+
+        for (let i = 0; i < quiz.length; i++) {
+          panel.innerHTML += `
+      <div class="question-number" onclick="jumpTo(${i})" id="q${i}">
+        ${i + 1}
+      </div>
+    `;
+        }
+      }
+
+      function jumpTo(index) {
+        saveAnswer();
+        loadQuestion(index);
+      }
+
+      function updateQuestionStatus() {
+        for (let i = 0; i < quiz.length; i++) {
+          let btn = document.getElementById("q" + i);
+          btn.classList.remove("attempted", "review");
+
+          if (userAnswers[i] !== null) {
+            btn.classList.add("attempted");
+          }
+
+          if (reviewMarked[i]) {
+            btn.classList.remove("attempted");
+            btn.classList.add("review");
+          }
+        }
+      }
+
+      /* SUBMIT */
+      function submitQuiz(auto = false) {
+        saveAnswer();
+
+        // ✅ Show warning only if manually submitting and time remains
+        if (!auto && timeLeft > 0) {
+          const confirmSubmit = confirm(
+            "Time is still remaining. Do you want to submit the quiz?",
+          );
+          if (!confirmSubmit) return;
+        }
+
+        clearInterval(timer);
+
+        let score = 0;
+        let resultHTML = "<h2>Quiz Completed</h2>";
+
+        for (let i = 0; i < quiz.length; i++) {
+          let correctAnswer = quiz[i].answer;
+          let userAnswer = userAnswers[i];
+
+          if (userAnswer === correctAnswer) score++;
+
+          resultHTML += `
+      <div class="review-answer ${
+        userAnswer === correctAnswer ? "correct" : "wrong"
+      }">
+        <strong>Q${i + 1}:</strong> ${quiz[i].question}<br>
+        <strong>Your Answer:</strong> ${
+          userAnswer !== null ? quiz[i].options[userAnswer] : "Not Attempted"
+        }<br>
+        <strong>Correct Answer:</strong> ${quiz[i].options[correctAnswer]}
+      </div>
+      <hr>
+    `;
+        }
+
+        resultHTML =
+          `<h2>Your Score: ${score} / ${quiz.length}</h2>` +
+          resultHTML +
+          `
+    <br>
+    <button onclick="goHome()" style="
+        padding:10px 20px;
+        background:#4e73df;
+        color:white;
+        border:none;
+        border-radius:6px;
+        cursor:pointer;">
+        Go Back to Home
+    </button>
+  `;
+
+        document.body.innerHTML = resultHTML;
+      }
+
+      function goHome() {
+        window.location.href = "index.html"; // change if your home file name is different
+      }
+
+      /* INIT */
+      createQuestionPanel();
+      loadQuestion(0);
+      startTimer();
+    </script>
+  </body>
+</html>
