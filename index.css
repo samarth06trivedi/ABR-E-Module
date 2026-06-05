@@ -38,6 +38,12 @@ body {
   color: #5f6f81;
 }
 
+.acknoledgment{
+  margin-top: 12px;
+  font-size: 12px;
+  color: #5f6f81;
+}
+
 /* GRID LAYOUT */
 
 .content-grid {
